@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String?
+  projectType String?
+  budget      String?
+  timeline    String?
+  score       Int?
+  createdAt   DateTime @default(now())
+}
+
+model Proposal {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+}
