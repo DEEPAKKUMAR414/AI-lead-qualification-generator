@@ -4,14 +4,35 @@ import { useState } from "react";
 
 export default function ChatPage() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<string[]>([
+  "AI: Hello! What type of project do you need?",
+]);
 
-  const sendMessage = () => {
-    if (!message.trim()) return;
+  const sendMessage = async () => {
+  if (!message.trim()) return;
 
-    setMessages([...messages, message]);
-    setMessage("");
-  };
+  const userMessage = message;
+
+  setMessages((prev) => [...prev, `You: ${userMessage}`]);
+  setMessage("");
+
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message: userMessage,
+    }),
+  });
+
+  const data = await res.json();
+
+  setMessages((prev) => [
+    ...prev,
+    `AI: ${data.reply}`,
+  ]);
+};
 
   return (
     <main className="min-h-screen flex flex-col items-center p-8">
