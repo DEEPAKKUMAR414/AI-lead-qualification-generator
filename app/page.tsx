@@ -4,8 +4,11 @@ import { useState } from "react";
 
 export default function ChatPage() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([
-  "AI: Hello! What type of project do you need?",
+  const [messages, setMessages] = useState([
+  {
+    role: "ai",
+    text: "Hello! What type of project do you need?",
+  },
 ]);
 
   const sendMessage = async () => {
@@ -13,7 +16,13 @@ export default function ChatPage() {
 
   const userMessage = message;
 
-  setMessages((prev) => [...prev, `You: ${userMessage}`]);
+  setMessages((prev) => [
+  ...prev,
+  {
+    role: "user",
+    text: userMessage,
+  },
+]);
   setMessage("");
 
   const res = await fetch("/api/chat", {
@@ -29,9 +38,12 @@ export default function ChatPage() {
   const data = await res.json();
 
   setMessages((prev) => [
-    ...prev,
-    `AI: ${data.reply}`,
-  ]);
+  ...prev,
+  {
+    role: "ai",
+    text: data.reply,
+  },
+]);
 };
 
   return (
@@ -42,10 +54,13 @@ export default function ChatPage() {
 
       <div className="w-full max-w-2xl border rounded-lg p-4 h-[400px] overflow-y-auto">
         {messages.map((msg, index) => (
-          <div key={index} className="mb-2">
-            <strong>You:</strong> {msg}
-          </div>
-        ))}
+  <div key={index} className="mb-2">
+    <strong>
+      {msg.role === "user" ? "You" : "AI"}:
+    </strong>{" "}
+    {msg.text}
+  </div>
+))}
       </div>
 
       <div className="w-full max-w-2xl flex gap-2 mt-4">
