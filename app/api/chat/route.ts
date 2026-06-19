@@ -23,17 +23,19 @@ Your job is to:
 Ask only one question at a time.
 
 User: ${message}
-      `,
+`,
     });
 
     return Response.json({
       reply: response.text,
     });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error("Gemini Error:", error);
 
     return Response.json(
-      { reply: "Something went wrong." },
+      {
+        reply: `ERROR: ${error?.message || "Unknown Error"}`,
+      },
       { status: 500 }
     );
   }

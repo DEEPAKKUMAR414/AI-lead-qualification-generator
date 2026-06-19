@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 
+type Message = {
+  role: "user" | "ai";
+  text: string;
+};
+
 export default function ChatPage() {
   const [message, setMessage] = useState("");
 
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",
       text: "Hello! What type of project do you need?",
@@ -25,39 +30,73 @@ export default function ChatPage() {
     if (!message.trim()) return;
 
     const userMessage = message;
+
+    // Name
     if (userMessage.toLowerCase().includes("my name is")) {
-  const name = userMessage.replace(/my name is/i, "").trim();
+      const name = userMessage.replace(/my name is/i, "").trim();
 
-  setLeadData((prev) => ({
-    ...prev,
-    name,
-  }));
-}
+      setLeadData((prev) => ({
+        ...prev,
+        name,
+      }));
+    }
 
-if (userMessage.toLowerCase().includes("@")) {
-  setLeadData((prev) => ({
-    ...prev,
-    email: userMessage.trim(),
-  }));
-}
+    // Email
+    if (userMessage.includes("@")) {
+      setLeadData((prev) => ({
+        ...prev,
+        email: userMessage.trim(),
+      }));
+    }
 
-if (userMessage.toLowerCase().includes("budget")) {
-  setLeadData((prev) => ({
-    ...prev,
-    budget: userMessage,
-  }));
-}
+    // Budget
+    const budgetMatch = userMessage.match(/\d+/);
 
-if (
-  userMessage.toLowerCase().includes("month") ||
-  userMessage.toLowerCase().includes("week")
-) {
-  setLeadData((prev) => ({
-    ...prev,
-    timeline: userMessage,
-  }));
-}
+    if (
+      userMessage.toLowerCase().includes("budget") ||
+      budgetMatch
+    ) {
+      setLeadData((prev) => ({
+        ...prev,
+        budget: userMessage,
+      }));
+    }
 
+    // Timeline
+    if (
+      userMessage.toLowerCase().includes("month") ||
+      userMessage.toLowerCase().includes("week")
+    ) {
+      setLeadData((prev) => ({
+        ...prev,
+        timeline: userMessage,
+      }));
+    }
+
+    // Project Type
+    if (
+      userMessage.toLowerCase().includes("website") ||
+      userMessage.toLowerCase().includes("ecommerce") ||
+      userMessage.toLowerCase().includes("app")
+    ) {
+      setLeadData((prev) => ({
+        ...prev,
+        projectType: userMessage,
+      }));
+    }
+
+    // Features
+    if (
+      userMessage.toLowerCase().includes("payment") ||
+      userMessage.toLowerCase().includes("admin") ||
+      userMessage.toLowerCase().includes("dashboard") ||
+      userMessage.toLowerCase().includes("login")
+    ) {
+      setLeadData((prev) => ({
+        ...prev,
+        features: userMessage,
+      }));
+    }
 
     setMessages((prev) => [
       ...prev,
@@ -100,11 +139,22 @@ if (
     }
   };
 
+  const completedFields = Object.values(leadData).filter(
+    (value) => value !== ""
+  ).length;
+
+  const completionPercentage =
+    (completedFields / 6) * 100;
+
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-      <h1 className="text-4xl font-bold mb-6">
+      <h1 className="text-4xl font-bold mb-2">
         AI Lead Qualification Assistant
       </h1>
+
+      <p className="mb-4 text-lg font-semibold text-green-600">
+        Lead Completion: {completionPercentage.toFixed(0)}%
+      </p>
 
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-xl p-6 h-[500px] overflow-y-auto">
         {messages.map((msg, index) => (
