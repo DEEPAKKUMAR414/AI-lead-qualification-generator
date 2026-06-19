@@ -12,10 +12,52 @@ export default function ChatPage() {
     },
   ]);
 
+  const [leadData, setLeadData] = useState({
+    name: "",
+    email: "",
+    projectType: "",
+    budget: "",
+    timeline: "",
+    features: "",
+  });
+
   const sendMessage = async () => {
     if (!message.trim()) return;
 
     const userMessage = message;
+    if (userMessage.toLowerCase().includes("my name is")) {
+  const name = userMessage.replace(/my name is/i, "").trim();
+
+  setLeadData((prev) => ({
+    ...prev,
+    name,
+  }));
+}
+
+if (userMessage.toLowerCase().includes("@")) {
+  setLeadData((prev) => ({
+    ...prev,
+    email: userMessage.trim(),
+  }));
+}
+
+if (userMessage.toLowerCase().includes("budget")) {
+  setLeadData((prev) => ({
+    ...prev,
+    budget: userMessage,
+  }));
+}
+
+if (
+  userMessage.toLowerCase().includes("month") ||
+  userMessage.toLowerCase().includes("week")
+) {
+  setLeadData((prev) => ({
+    ...prev,
+    timeline: userMessage,
+  }));
+}
+
 
     setMessages((prev) => [
       ...prev,
@@ -102,6 +144,14 @@ export default function ChatPage() {
         >
           Send
         </button>
+      </div>
+
+      <div className="w-full max-w-4xl mt-6 bg-white p-4 rounded-xl shadow">
+        <h2 className="font-bold mb-2">Lead Data</h2>
+
+        <pre>
+          {JSON.stringify(leadData, null, 2)}
+        </pre>
       </div>
     </main>
   );
