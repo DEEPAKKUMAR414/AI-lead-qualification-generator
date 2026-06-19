@@ -145,6 +145,27 @@ export default function ChatPage() {
 
   const completionPercentage =
     (completedFields / 6) * 100;
+    let leadScore = 0;
+
+if (leadData.projectType) leadScore += 20;
+
+if (leadData.budget) leadScore += 20;
+
+if (leadData.timeline) leadScore += 15;
+
+if (leadData.features) leadScore += 25;
+
+if (leadData.email) leadScore += 10;
+
+if (leadData.name) leadScore += 10;
+
+let leadQuality = "Low Quality Lead";
+
+if (leadScore >= 80) {
+  leadQuality = "High Quality Lead";
+} else if (leadScore >= 50) {
+  leadQuality = "Medium Quality Lead";
+}
 
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
@@ -155,6 +176,14 @@ export default function ChatPage() {
       <p className="mb-4 text-lg font-semibold text-green-600">
         Lead Completion: {completionPercentage.toFixed(0)}%
       </p>
+      <p className="text-xl font-bold text-blue-600">
+  Lead Score: {leadScore}/100
+</p>
+
+    <p className="mb-4 font-semibold">
+      {leadQuality}
+    </p>
+
 
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-xl p-6 h-[500px] overflow-y-auto">
         {messages.map((msg, index) => (
@@ -199,9 +228,14 @@ export default function ChatPage() {
       <div className="w-full max-w-4xl mt-6 bg-white p-4 rounded-xl shadow">
         <h2 className="font-bold mb-2">Lead Data</h2>
 
-        <pre>
-          {JSON.stringify(leadData, null, 2)}
-        </pre>
+        <div className="space-y-2">
+  <p><strong>Name:</strong> {leadData.name}</p>
+  <p><strong>Email:</strong> {leadData.email}</p>
+  <p><strong>Project:</strong> {leadData.projectType}</p>
+  <p><strong>Budget:</strong> {leadData.budget}</p>
+  <p><strong>Timeline:</strong> {leadData.timeline}</p>
+  <p><strong>Features:</strong> {leadData.features}</p>
+</div>
       </div>
     </main>
   );
