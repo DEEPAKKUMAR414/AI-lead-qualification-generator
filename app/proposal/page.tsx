@@ -1,7 +1,42 @@
+"use client";
+import { jsPDF } from "jspdf";
 export default function ProposalPage() {
+  const downloadPDF = () => {
+  const doc = new jsPDF();
+
+  doc.setFontSize(20);
+  doc.text("AI Project Proposal", 20, 20);
+
+  doc.setFontSize(12);
+  doc.text("Client Name: Deepak Kumar", 20, 40);
+  doc.text("Email: deepak@gmail.com", 20, 50);
+
+  doc.text("Project: Ecommerce Website", 20, 70);
+  doc.text("Budget: ₹50,000", 20, 80);
+  doc.text("Timeline: 1 Month", 20, 90);
+
+  doc.text("Features:", 20, 110);
+  doc.text("- Payment Gateway", 30, 120);
+  doc.text("- Admin Panel", 30, 130);
+  doc.text("- Login System", 30, 140);
+
+  doc.text("Lead Score: 95/100", 20, 170);
+  doc.text("Lead Quality: High Quality Lead", 20, 180);
+
+  doc.save("proposal.pdf");
+};
   return (
-    <main className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-4xl mx-auto bg-white p-10 rounded-xl shadow-lg">
+  <main className="min-h-screen bg-gray-100 py-10">
+    <div className="max-w-4xl mx-auto">
+
+      <button
+        onClick={downloadPDF}
+        className="mb-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
+      >
+        Download Proposal PDF
+      </button>
+
+      <div className="bg-white p-10 rounded-xl shadow-lg">
 
         <div className="border-b pb-6 mb-6">
           <h1 className="text-4xl font-bold">
@@ -63,12 +98,13 @@ export default function ProposalPage() {
           <p><strong>Lead Score:</strong> 95/100</p>
 
           <p>
-            <strong>Lead Quality:</strong>
-            {" "}High Quality Lead
+            <strong>Lead Quality:</strong> High Quality Lead
           </p>
 
         </div>
+
       </div>
-    </main>
-  );
+    </div>
+  </main>
+);
 }
