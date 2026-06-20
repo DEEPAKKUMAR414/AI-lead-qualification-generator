@@ -223,6 +223,12 @@ export default function ChatPage() {
 >
   View Proposal
 </a>
+<a
+  href="/dashboard"
+  className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl"
+>
+  View Dashboard
+</a>
     </main>
   );
 }
