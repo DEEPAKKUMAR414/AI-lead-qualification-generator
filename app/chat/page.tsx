@@ -25,65 +25,65 @@ export default function ChatPage() {
     timeline: "",
     features: "",
   });
+  const [leadId, setLeadId] = useState("");
 
   const sendMessage = async () => {
     if (!message.trim()) return;
 
     const userMessage = message;
 
+    // Copy current lead data
+    const updatedLeadData = {
+      ...leadData,
+    };
+
+    // Extract Name
     if (userMessage.toLowerCase().includes("my name is")) {
-      setLeadData((prev) => ({
-        ...prev,
-        name: userMessage.replace(/my name is/i, "").trim(),
-      }));
+      updatedLeadData.name = userMessage
+        .replace(/my name is/i, "")
+        .trim();
     }
 
+    // Extract Email
     if (userMessage.includes("@")) {
-      setLeadData((prev) => ({
-        ...prev,
-        email: userMessage,
-      }));
+      updatedLeadData.email = userMessage.trim();
     }
 
+    // Extract Project Type
     if (
       userMessage.toLowerCase().includes("website") ||
       userMessage.toLowerCase().includes("ecommerce") ||
       userMessage.toLowerCase().includes("app")
     ) {
-      setLeadData((prev) => ({
-        ...prev,
-        projectType: userMessage,
-      }));
+      updatedLeadData.projectType = userMessage;
     }
 
-    if (userMessage.match(/\d+/)) {
-      setLeadData((prev) => ({
-        ...prev,
-        budget: userMessage,
-      }));
+    // Extract Budget
+    if (/\d+/.test(userMessage)) {
+      updatedLeadData.budget = userMessage;
     }
 
+    // Extract Timeline
     if (
       userMessage.toLowerCase().includes("month") ||
       userMessage.toLowerCase().includes("week")
     ) {
-      setLeadData((prev) => ({
-        ...prev,
-        timeline: userMessage,
-      }));
+      updatedLeadData.timeline = userMessage;
     }
 
+    // Extract Features
     if (
       userMessage.toLowerCase().includes("payment") ||
       userMessage.toLowerCase().includes("admin") ||
       userMessage.toLowerCase().includes("login")
     ) {
-      setLeadData((prev) => ({
-        ...prev,
-        features: userMessage,
-      }));
+      updatedLeadData.features = userMessage;
     }
 
+    // Update React state
+    setLeadData(updatedLeadData);
+
+    // Add user message
     setMessages((prev) => [
       ...prev,
       {
@@ -95,6 +95,39 @@ export default function ChatPage() {
     setMessage("");
 
     try {
+      // Save Lead
+      if (!leadId) {
+  // Create first lead
+  const leadResponse = await fetch("/api/leads", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...updatedLeadData,
+      score: leadScore,
+    }),
+  });
+
+  const lead = await leadResponse.json();
+
+  setLeadId(lead.id);
+} else {
+  // Update existing lead
+  await fetch("/api/leads", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id: leadId,
+      ...updatedLeadData,
+      score: leadScore,
+    }),
+  });
+}
+
+      // AI Chat
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -114,7 +147,9 @@ export default function ChatPage() {
           text: data.reply,
         },
       ]);
-    } catch {
+    } catch (error) {
+      console.error(error);
+
       setMessages((prev) => [
         ...prev,
         {
@@ -147,8 +182,7 @@ export default function ChatPage() {
   } else if (leadScore >= 50) {
     leadQuality = "Medium Quality Lead";
   }
-
-  return (
+    return (
     <main className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
       <h1 className="text-4xl font-bold mb-2">
         AI Lead Qualification Assistant
@@ -162,10 +196,9 @@ export default function ChatPage() {
         Lead Score: {leadScore}/100
       </p>
 
-      <p className="mb-6 font-semibold">
-        {leadQuality}
-      </p>
+      <p className="mb-6 font-semibold">{leadQuality}</p>
 
+      {/* Chat Box */}
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-xl p-6 h-[450px] overflow-y-auto">
         {messages.map((msg, index) => (
           <div
@@ -189,6 +222,7 @@ export default function ChatPage() {
         ))}
       </div>
 
+      {/* Input */}
       <div className="w-full max-w-4xl flex gap-2 mt-4">
         <input
           type="text"
@@ -206,29 +240,41 @@ export default function ChatPage() {
         </button>
       </div>
 
+      {/* Lead Summary */}
       <div className="w-full max-w-4xl mt-6 bg-white p-4 rounded-xl shadow">
-        <h2 className="font-bold mb-4">Lead Summary</h2>
+        <h2 className="font-bold mb-4 text-xl">
+          Lead Summary
+        </h2>
 
         <p><strong>Name:</strong> {leadData.name}</p>
+
         <p><strong>Email:</strong> {leadData.email}</p>
+
         <p><strong>Project:</strong> {leadData.projectType}</p>
+
         <p><strong>Budget:</strong> {leadData.budget}</p>
+
         <p><strong>Timeline:</strong> {leadData.timeline}</p>
+
         <p><strong>Features:</strong> {leadData.features}</p>
       </div>
 
-      <a
-  href="/proposal"
-  className="mt-6 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
->
-  View Proposal
-</a>
-<a
-  href="/dashboard"
-  className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl"
->
-  View Dashboard
-</a>
+      {/* Buttons */}
+      <div className="flex gap-4 mt-6">
+        <a
+          href="/proposal"
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
+        >
+          View Proposal
+        </a>
+
+        <a
+          href="/dashboard"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl"
+        >
+          View Dashboard
+        </a>
+      </div>
     </main>
   );
 }

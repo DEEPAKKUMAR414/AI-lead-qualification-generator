@@ -8,17 +8,21 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model Lead {
   id          String   @id @default(cuid())
   name        String?
+  email       String?
   projectType String?
   budget      String?
   timeline    String?
+  features    String?
   score       Int?
+  status String @default("New")
+  followUpEmail String?
   createdAt   DateTime @default(now())
 }
 

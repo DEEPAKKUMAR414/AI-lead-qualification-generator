@@ -1,40 +1,38 @@
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY!,
+const client = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 export async function POST(req: Request) {
   try {
     const { message } = await req.json();
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: `
-You are an AI Lead Qualification Assistant.
-
-Your job is to:
-- Understand project requirements
-- Ask follow-up questions
-- Collect budget
-- Collect timeline
-- Collect required features
-
-Ask only one question at a time.
-
-User: ${message}
-`,
+    const completion = await client.chat.completions.create({
+      model: "openai/gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an AI Lead Qualification Assistant. Ask one question at a time and collect project details, budget, timeline and requirements.",
+        },
+        {
+          role: "user",
+          content: message,
+        },
+      ],
     });
 
     return Response.json({
-      reply: response.text,
+      reply: completion.choices[0].message.content,
     });
-  } catch (error: any) {
-    console.error("Gemini Error:", error);
+  } catch (error) {
+    console.error(error);
 
     return Response.json(
       {
-        reply: `ERROR: ${error?.message || "Unknown Error"}`,
+        reply: "Something went wrong.",
       },
       { status: 500 }
     );
