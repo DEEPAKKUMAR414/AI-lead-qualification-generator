@@ -7,17 +7,28 @@ type Message = {
   text: string;
 };
 
-export default function ChatPage() {
+type LeadData = {
+  name: string;
+  email: string;
+  projectType: string;
+  budget: string;
+  timeline: string;
+  features: string;
+};
+
+export default function Home() {
   const [message, setMessage] = useState("");
 
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",
-      text: "Hello! What type of project do you need?",
+      text: "👋 Hello! Welcome to AI Lead Qualification Assistant.\n\nWhat is your name?",
     },
   ]);
 
-  const [leadData, setLeadData] = useState({
+  const [step, setStep] = useState(0);
+
+  const [leadData, setLeadData] = useState<LeadData>({
     name: "",
     email: "",
     projectType: "",
@@ -26,167 +37,146 @@ export default function ChatPage() {
     features: "",
   });
 
+  const questions = [
+    "What is your email address?",
+    "What type of project do you need?",
+    "What is your budget?",
+    "What is your expected timeline?",
+    "What features do you need?",
+  ];
+    const calculateScore = () => {
+    let score = 0;
+
+    if (leadData.name) score += 10;
+    if (leadData.email) score += 10;
+    if (leadData.projectType) score += 20;
+    if (leadData.budget) score += 20;
+    if (leadData.timeline) score += 15;
+    if (leadData.features) score += 25;
+
+    return score;
+  };
+
   const sendMessage = async () => {
     if (!message.trim()) return;
 
-    const userMessage = message;
-
-    // Name
-    if (userMessage.toLowerCase().includes("my name is")) {
-      const name = userMessage.replace(/my name is/i, "").trim();
-
-      setLeadData((prev) => ({
-        ...prev,
-        name,
-      }));
-    }
-
-    // Email
-    if (userMessage.includes("@")) {
-      setLeadData((prev) => ({
-        ...prev,
-        email: userMessage.trim(),
-      }));
-    }
-
-    // Budget
-    const budgetMatch = userMessage.match(/\d+/);
-
-    if (
-      userMessage.toLowerCase().includes("budget") ||
-      budgetMatch
-    ) {
-      setLeadData((prev) => ({
-        ...prev,
-        budget: userMessage,
-      }));
-    }
-
-    // Timeline
-    if (
-      userMessage.toLowerCase().includes("month") ||
-      userMessage.toLowerCase().includes("week")
-    ) {
-      setLeadData((prev) => ({
-        ...prev,
-        timeline: userMessage,
-      }));
-    }
-
-    // Project Type
-    if (
-      userMessage.toLowerCase().includes("website") ||
-      userMessage.toLowerCase().includes("ecommerce") ||
-      userMessage.toLowerCase().includes("app")
-    ) {
-      setLeadData((prev) => ({
-        ...prev,
-        projectType: userMessage,
-      }));
-    }
-
-    // Features
-    if (
-      userMessage.toLowerCase().includes("payment") ||
-      userMessage.toLowerCase().includes("admin") ||
-      userMessage.toLowerCase().includes("dashboard") ||
-      userMessage.toLowerCase().includes("login")
-    ) {
-      setLeadData((prev) => ({
-        ...prev,
-        features: userMessage,
-      }));
-    }
+    const userInput = message;
 
     setMessages((prev) => [
       ...prev,
       {
         role: "user",
-        text: userMessage,
+        text: userInput,
       },
     ]);
 
     setMessage("");
 
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: userMessage,
-        }),
-      });
+    const updatedLead = { ...leadData };
 
-      const data = await res.json();
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ai",
-          text: data.reply,
-        },
-      ]);
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ai",
-          text: "Something went wrong. Please try again.",
-        },
-      ]);
+    switch (step) {
+      case 0:
+        updatedLead.name = userInput;
+        break;
+      case 1:
+        updatedLead.email = userInput;
+        break;
+      case 2:
+        updatedLead.projectType = userInput;
+        break;
+      case 3:
+        updatedLead.budget = userInput;
+        break;
+      case 4:
+        updatedLead.timeline = userInput;
+        break;
+      case 5:
+        updatedLead.features = userInput;
+        break;
     }
+
+    setLeadData(updatedLead);
+
+    if (step < questions.length) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            text: questions[step],
+          },
+        ]);
+      }, 400);
+
+      setStep(step + 1);
+      return;
+    }
+
+    const score = calculateScore();
+
+    await fetch("/api/leads", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...updatedLead,
+        score,
+        status: "New",
+      }),
+    });
+
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          text:
+            "✅ Thank you! Your lead has been saved successfully.\n\nYou can now open the Dashboard to view it.",
+        },
+      ]);
+    }, 500);
   };
 
-  const completedFields = Object.values(leadData).filter(
-    (value) => value !== ""
-  ).length;
+  const completed =
+    Object.values(leadData).filter(Boolean).length;
 
-  const completionPercentage =
-    (completedFields / 6) * 100;
-    let leadScore = 0;
+  const completionPercentage = (completed / 6) * 100;
 
-if (leadData.projectType) leadScore += 20;
+  const leadScore = calculateScore();
 
-if (leadData.budget) leadScore += 20;
+  let leadQuality = "Low Quality Lead";
 
-if (leadData.timeline) leadScore += 15;
-
-if (leadData.features) leadScore += 25;
-
-if (leadData.email) leadScore += 10;
-
-if (leadData.name) leadScore += 10;
-
-let leadQuality = "Low Quality Lead";
-
-if (leadScore >= 80) {
-  leadQuality = "High Quality Lead";
-} else if (leadScore >= 50) {
-  leadQuality = "Medium Quality Lead";
-}
-
-  return (
+  if (leadScore >= 80) {
+    leadQuality = "High Quality Lead";
+  } else if (leadScore >= 50) {
+    leadQuality = "Medium Quality Lead";
+  }
+    return (
     <main className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
+
       <h1 className="text-4xl font-bold mb-2">
         AI Lead Qualification Assistant
       </h1>
 
-      <p className="mb-4 text-lg font-semibold text-green-600">
+      <p className="text-lg font-semibold text-green-600 mb-2">
         Lead Completion: {completionPercentage.toFixed(0)}%
       </p>
+
       <p className="text-xl font-bold text-blue-600">
-  Lead Score: {leadScore}/100
-</p>
+        Lead Score: {leadScore}/100
+      </p>
 
-    <p className="mb-4 font-semibold">
-      {leadQuality}
-    </p>
+      <p className="font-semibold mb-6">
+        {leadQuality}
+      </p>
 
+      {/* Chat Box */}
 
-      <div className="w-full max-w-4xl bg-white shadow-lg rounded-xl p-6 h-[500px] overflow-y-auto">
+      <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg h-[500px] overflow-y-auto p-6">
+
         {messages.map((msg, index) => (
+
           <div
             key={index}
             className={`flex mb-4 ${
@@ -195,8 +185,9 @@ if (leadScore >= 80) {
                 : "justify-start"
             }`}
           >
+
             <div
-              className={`max-w-[70%] px-4 py-3 rounded-2xl ${
+              className={`px-4 py-3 rounded-2xl max-w-[75%] ${
                 msg.role === "user"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 text-black"
@@ -204,39 +195,59 @@ if (leadScore >= 80) {
             >
               {msg.text}
             </div>
+
           </div>
+
         ))}
+
       </div>
 
-      <div className="w-full max-w-4xl flex gap-2 mt-4">
+      {/* Input */}
+
+      <div className="w-full max-w-4xl flex gap-3 mt-5">
+
         <input
-          type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Describe your project..."
-          className="flex-1 border border-gray-300 rounded-xl p-4 outline-none"
+          placeholder="Type your answer..."
+          className="flex-1 border rounded-xl p-4"
         />
 
         <button
           onClick={sendMessage}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-xl"
         >
           Send
         </button>
+
       </div>
 
-      <div className="w-full max-w-4xl mt-6 bg-white p-4 rounded-xl shadow">
-        <h2 className="font-bold mb-2">Lead Data</h2>
+      {/* Lead Summary */}
+
+      <div className="w-full max-w-4xl bg-white rounded-xl shadow mt-8 p-6">
+
+        <h2 className="text-2xl font-bold mb-4">
+          Lead Summary
+        </h2>
 
         <div className="space-y-2">
-  <p><strong>Name:</strong> {leadData.name}</p>
-  <p><strong>Email:</strong> {leadData.email}</p>
-  <p><strong>Project:</strong> {leadData.projectType}</p>
-  <p><strong>Budget:</strong> {leadData.budget}</p>
-  <p><strong>Timeline:</strong> {leadData.timeline}</p>
-  <p><strong>Features:</strong> {leadData.features}</p>
-</div>
+
+          <p><strong>Name:</strong> {leadData.name}</p>
+
+          <p><strong>Email:</strong> {leadData.email}</p>
+
+          <p><strong>Project:</strong> {leadData.projectType}</p>
+
+          <p><strong>Budget:</strong> {leadData.budget}</p>
+
+          <p><strong>Timeline:</strong> {leadData.timeline}</p>
+
+          <p><strong>Features:</strong> {leadData.features}</p>
+
+        </div>
+
       </div>
+
     </main>
   );
 }
