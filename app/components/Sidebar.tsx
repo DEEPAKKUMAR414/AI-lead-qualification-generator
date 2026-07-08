@@ -17,11 +17,11 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="border-b border-gray-200 p-8 dark:border-zinc-800">
         <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent">
-          AI CRM
+          LeadIQ AI
         </h1>
 
         <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400">
-          AI Lead Qualification
+           AI-powered CRM for lead qualification and sales automation.
         </p>
       </div>
 
