@@ -7,6 +7,9 @@ import SearchFilter from "../components/SearchFilter";
 import LeadTable from "../components/LeadTable";
 import AnalyticsChart from "../components/AnalyticsChart";
 import EmailModal from "../components/EmailModal";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
+import RecentActivity from "../components/RecentActivity";
 
 
 import {
@@ -209,32 +212,23 @@ export default function DashboardPage() {
           leads.filter((l) => l.status === "Lost").length,
         ],
         backgroundColor: [
-          "#3B82F6",
-          "#10B981",
-          "#F59E0B",
-          "#22C55E",
-          "#EF4444",
-        ],
+  "#2563EB",
+  "#14B8A6",
+  "#F59E0B",
+  "#8B5CF6",
+  "#EF4444",
+],
         borderRadius: 8,
       },
     ],
   };
 
   return (
-  <main className="min-h-screen bg-gray-100 p-8">
+  <main className="min-h-screen bg-slate-100 dark:bg-zinc-950 ml-72 p-8">
+    <Sidebar />
+    <Topbar exportCSV={exportCSV} />
+  
 
-    <div className="flex justify-between items-center mb-8">
-      <h1 className="text-4xl font-bold">
-        Lead Dashboard
-      </h1>
-
-      <button
-        onClick={exportCSV}
-        className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-lg"
-      >
-        📥 Export CSV
-      </button>
-    </div>
 
     {/* Dashboard Cards */}
 
@@ -246,14 +240,22 @@ export default function DashboardPage() {
 
     {/* Analytics */}
 
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+
+  <div className="xl:col-span-2">
     <AnalyticsChart chartData={chartData} />
+  </div>
+
+  <RecentActivity />
+
+</div>
     {/* Lead Table */}
 
-    <div className="bg-white rounded-xl shadow p-6">
+    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition-colors duration-300 dark:border-zinc-800 dark:bg-zinc-900">
 
       <div className="flex justify-between items-center mb-6">
 
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           Recent Leads
         </h2>
 

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import ChatWindow from "./components/ChatWindow";
+import ChatInput from "./components/ChatInput";
+import ProgressCard from "./components/ProgressCard";
+import LeadSummary from "./components/LeadSummary";
 
 type Message = {
   role: "user" | "ai";
@@ -22,20 +26,22 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",
-      text: "👋 Hello! Welcome to AI Lead Qualification Assistant.\n\nWhat is your name?",
+      text:
+        "👋 Hello! Welcome to AI Lead Qualification Assistant.\n\nWhat is your name?",
     },
   ]);
 
   const [step, setStep] = useState(0);
 
-  const [leadData, setLeadData] = useState<LeadData>({
-    name: "",
-    email: "",
-    projectType: "",
-    budget: "",
-    timeline: "",
-    features: "",
-  });
+  const [leadData, setLeadData] =
+    useState<LeadData>({
+      name: "",
+      email: "",
+      projectType: "",
+      budget: "",
+      timeline: "",
+      features: "",
+    });
 
   const questions = [
     "What is your email address?",
@@ -44,7 +50,8 @@ export default function Home() {
     "What is your expected timeline?",
     "What features do you need?",
   ];
-    const calculateScore = () => {
+
+  const calculateScore = () => {
     let score = 0;
 
     if (leadData.name) score += 10;
@@ -72,32 +79,41 @@ export default function Home() {
 
     setMessage("");
 
-    const updatedLead = { ...leadData };
+    const updatedLead = {
+      ...leadData,
+    };
 
     switch (step) {
       case 0:
         updatedLead.name = userInput;
         break;
+
       case 1:
         updatedLead.email = userInput;
         break;
+
       case 2:
-        updatedLead.projectType = userInput;
+        updatedLead.projectType =
+          userInput;
         break;
+
       case 3:
         updatedLead.budget = userInput;
         break;
+
       case 4:
-        updatedLead.timeline = userInput;
+        updatedLead.timeline =
+          userInput;
         break;
+
       case 5:
-        updatedLead.features = userInput;
+        updatedLead.features =
+          userInput;
         break;
     }
 
     setLeadData(updatedLead);
-
-    if (step < questions.length) {
+        if (step < questions.length) {
       setTimeout(() => {
         setMessages((prev) => [
           ...prev,
@@ -114,34 +130,48 @@ export default function Home() {
 
     const score = calculateScore();
 
-    await fetch("/api/leads", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...updatedLead,
-        score,
-        status: "New",
-      }),
-    });
+    try {
+      await fetch("/api/leads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...updatedLead,
+          score,
+          status: "New",
+        }),
+      });
 
-    setTimeout(() => {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            text:
+              "✅ Thank you! Your lead has been saved successfully.\n\nYou can now open the Dashboard to view it.",
+          },
+        ]);
+      }, 500);
+    } catch (error) {
+      console.error(error);
+
       setMessages((prev) => [
         ...prev,
         {
           role: "ai",
           text:
-            "✅ Thank you! Your lead has been saved successfully.\n\nYou can now open the Dashboard to view it.",
+            "❌ Something went wrong while saving your lead. Please try again.",
         },
       ]);
-    }, 500);
+    }
   };
 
   const completed =
     Object.values(leadData).filter(Boolean).length;
 
-  const completionPercentage = (completed / 6) * 100;
+  const completionPercentage =
+    (completed / 6) * 100;
 
   const leadScore = calculateScore();
 
@@ -152,97 +182,159 @@ export default function Home() {
   } else if (leadScore >= 50) {
     leadQuality = "Medium Quality Lead";
   }
-    return (
-    <main className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
 
-      <h1 className="text-4xl font-bold mb-2">
-        AI Lead Qualification Assistant
-      </h1>
+  return (
+        <main className="min-h-screen bg-gray-100 transition-colors duration-300 dark:bg-zinc-950">
+      {/* Header */}
+      <div className="mx-auto max-w-7xl px-6 py-8">
 
-      <p className="text-lg font-semibold text-green-600 mb-2">
-        Lead Completion: {completionPercentage.toFixed(0)}%
-      </p>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+            AI Lead Qualification Assistant
+          </h1>
 
-      <p className="text-xl font-bold text-blue-600">
-        Lead Score: {leadScore}/100
-      </p>
+          <p className="mt-2 text-gray-500 dark:text-zinc-400">
+            Qualify potential clients with AI before sending them to your CRM.
+          </p>
+        </div>
 
-      <p className="font-semibold mb-6">
-        {leadQuality}
-      </p>
+        {/* Progress Card */}
 
-      {/* Chat Box */}
+        <div className="mb-8">
+          <ProgressCard
+            completionPercentage={completionPercentage}
+            leadScore={leadScore}
+            leadQuality={leadQuality}
+          />
+        </div>
 
-      <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg h-[500px] overflow-y-auto p-6">
+        {/* Main Grid */}
 
-        {messages.map((msg, index) => (
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 
-          <div
-            key={index}
-            className={`flex mb-4 ${
-              msg.role === "user"
-                ? "justify-end"
-                : "justify-start"
-            }`}
-          >
+          {/* Chat Section */}
 
-            <div
-              className={`px-4 py-3 rounded-2xl max-w-[75%] ${
-                msg.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-black"
-              }`}
-            >
-              {msg.text}
-            </div>
+          <div className="flex flex-col lg:col-span-2">
+
+            <ChatWindow
+              messages={messages}
+            />
+
+            <ChatInput
+              message={message}
+              setMessage={setMessage}
+              sendMessage={sendMessage}
+            />
 
           </div>
 
-        ))}
+          {/* Right Panel */}
 
-      </div>
+          <div className="space-y-6">
 
-      {/* Input */}
+            <LeadSummary
+              leadData={leadData}
+            />
 
-      <div className="w-full max-w-4xl flex gap-3 mt-5">
+            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-900">
 
-        <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your answer..."
-          className="flex-1 border rounded-xl p-4"
-        />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                AI Insights
+              </h2>
 
-        <button
-          onClick={sendMessage}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-xl"
-        >
-          Send
-        </button>
+              <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400">
+                Based on the collected information.
+              </p>
 
-      </div>
+              <div className="mt-6 space-y-4">
 
-      {/* Lead Summary */}
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500 dark:text-zinc-400">
+                    Completion
+                  </span>
 
-      <div className="w-full max-w-4xl bg-white rounded-xl shadow mt-8 p-6">
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {completionPercentage.toFixed(0)}%
+                  </span>
+                </div>
 
-        <h2 className="text-2xl font-bold mb-4">
-          Lead Summary
-        </h2>
+                <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-800">
 
-        <div className="space-y-2">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-700"
+                    style={{
+                      width: `${completionPercentage}%`,
+                    }}
+                  />
 
-          <p><strong>Name:</strong> {leadData.name}</p>
+                </div>
 
-          <p><strong>Email:</strong> {leadData.email}</p>
+                <div className="flex items-center justify-between">
 
-          <p><strong>Project:</strong> {leadData.projectType}</p>
+                  <span className="text-gray-500 dark:text-zinc-400">
+                    Lead Score
+                  </span>
 
-          <p><strong>Budget:</strong> {leadData.budget}</p>
+                  <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    {leadScore}/100
+                  </span>
 
-          <p><strong>Timeline:</strong> {leadData.timeline}</p>
+                </div>
+                                <div className="flex items-center justify-between">
 
-          <p><strong>Features:</strong> {leadData.features}</p>
+                  <span className="text-gray-500 dark:text-zinc-400">
+                    Quality
+                  </span>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm font-semibold text-white ${
+                      leadScore >= 80
+                        ? "bg-green-500"
+                        : leadScore >= 50
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                    }`}
+                  >
+                    {leadQuality}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Tips */}
+
+            <div className="rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm dark:border-blue-900 dark:from-blue-950/30 dark:to-indigo-950/30">
+
+              <h2 className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                💡 AI Recommendation
+              </h2>
+
+              <p className="mt-3 text-sm leading-7 text-gray-600 dark:text-zinc-400">
+                The more information you provide, the better the AI can
+                qualify your lead and generate personalized proposals
+                and follow-up emails.
+              </p>
+
+              <div className="mt-5 rounded-2xl bg-white/70 p-4 dark:bg-zinc-900/70">
+                <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+                  ✔ Complete all 6 fields
+                </p>
+
+                <p className="mt-2 text-sm font-medium text-gray-700 dark:text-zinc-300">
+                  ✔ Higher score means better lead quality
+                </p>
+
+                <p className="mt-2 text-sm font-medium text-gray-700 dark:text-zinc-300">
+                  ✔ Leads are automatically saved to your CRM
+                </p>
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 

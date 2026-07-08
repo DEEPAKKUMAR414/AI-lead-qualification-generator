@@ -33,55 +33,10 @@ export default function ChatPage() {
     const userMessage = message;
 
     // Copy current lead data
-    const updatedLeadData = {
-      ...leadData,
-    };
+    const updatedLeadData = leadData;
 
-    // Extract Name
-    if (userMessage.toLowerCase().includes("my name is")) {
-      updatedLeadData.name = userMessage
-        .replace(/my name is/i, "")
-        .trim();
-    }
-
-    // Extract Email
-    if (userMessage.includes("@")) {
-      updatedLeadData.email = userMessage.trim();
-    }
-
-    // Extract Project Type
-    if (
-      userMessage.toLowerCase().includes("website") ||
-      userMessage.toLowerCase().includes("ecommerce") ||
-      userMessage.toLowerCase().includes("app")
-    ) {
-      updatedLeadData.projectType = userMessage;
-    }
-
-    // Extract Budget
-    if (/\d+/.test(userMessage)) {
-      updatedLeadData.budget = userMessage;
-    }
-
-    // Extract Timeline
-    if (
-      userMessage.toLowerCase().includes("month") ||
-      userMessage.toLowerCase().includes("week")
-    ) {
-      updatedLeadData.timeline = userMessage;
-    }
-
-    // Extract Features
-    if (
-      userMessage.toLowerCase().includes("payment") ||
-      userMessage.toLowerCase().includes("admin") ||
-      userMessage.toLowerCase().includes("login")
-    ) {
-      updatedLeadData.features = userMessage;
-    }
-
-    // Update React state
-    setLeadData(updatedLeadData);
+    
+ 
 
     // Add user message
     setMessages((prev) => [
@@ -134,19 +89,22 @@ export default function ChatPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: userMessage,
-        }),
+    message: userMessage,
+    leadData: updatedLeadData,
+}),
       });
 
       const data = await res.json();
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ai",
-          text: data.reply,
-        },
-      ]);
+setLeadData(data.leadData);
+
+setMessages((prev) => [
+  ...prev,
+  {
+    role: "ai",
+    text: data.reply,
+  },
+]);
     } catch (error) {
       console.error(error);
 
