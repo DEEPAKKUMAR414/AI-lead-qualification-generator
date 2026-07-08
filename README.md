@@ -40,10 +40,9 @@ An AI-powered Lead Qualification CRM that helps businesses automate lead qualifi
 ### 🤖 AI Chat Assistant
 
 ![AI Chat](./public/screenshots/chat.png)
-### CRM Dashboard
+### 📊 CRM Dashboard
 
-> Add a screenshot here
-
+![Dashboard](public/screenshots/dashboard.png)
 ### Analytics
 
 > Add a screenshot here
